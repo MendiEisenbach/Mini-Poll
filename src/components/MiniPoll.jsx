@@ -1,11 +1,14 @@
 import { useState } from "react";
+import PollOption from "./PollOption";
+import PollResults from "./PollResults";
+import AddOptionForm from "./AddOptionForm";
+import "./MiniPoll.css";
+
 
 function MiniPoll() {
   const [options, setOptions] = useState(["React", "Vue", "Svelte"]);
   const [votes, setVotes] = useState([0, 0, 0]);
   const [showResults, setShowResults] = useState(false);
-  const [newOption, setNewOption] = useState("");
-  const [error, setError] = useState("");
 
   const vote = (index) => {
     const updatedVotes = [...votes];
@@ -17,39 +20,33 @@ function MiniPoll() {
     setVotes(votes.map(() => 0));
   };
 
-  const addOption = () => {
-    if (!newOption.trim()) {
-      setError("Please enter a name.");
-      return;
-    }
+  const addOption = (newOption) => {
     setOptions([...options, newOption]);
     setVotes([...votes, 0]);
-    setNewOption("");
-    setError("");
   };
 
   const maxVotes = Math.max(...votes);
-  const leaders = options.filter((_, i) => votes[i] === maxVotes);
+  const leaders = options.filter((option, i) => votes[i] === maxVotes);
 
   return (
     <div>
       <h1>Mini Poll</h1>
 
-      {showResults && options.length > 0 && (
-        <div>
-          {leaders.length > 1 ? "It's a tie!" : `Leader: ${leaders[0]}`}
-        </div>
-      )}
+      <PollResults show={showResults} leaders={leaders} />
 
       {options.length === 0 ? (
         <p>No options yet.</p>
       ) : (
         <ul>
           {options.map((option, index) => (
-            <li key={index}>
-              {option} {showResults && <span>({votes[index]} votes)</span>}{" "}
-              <button onClick={() => vote(index)}>Vote</button>
-            </li>
+            <PollOption
+              key={index}
+              option={option}
+              votes={votes[index]}
+              index={index}
+              onVote={vote}
+              showResults={showResults}
+            />
           ))}
         </ul>
       )}
@@ -59,16 +56,7 @@ function MiniPoll() {
       </button>
       <button onClick={resetVotes}>Reset Votes</button>
 
-      <div>
-        <input
-          type="text"
-          value={newOption}
-          onChange={(e) => setNewOption(e.target.value)}
-          placeholder="New option"
-        />
-        <button onClick={addOption}>Add</button>
-        {error && <div>{error}</div>}
-      </div>
+      <AddOptionForm onAdd={addOption} />
     </div>
   );
 }
